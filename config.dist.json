@@ -1,0 +1,5 @@
+{
+    "base_url": "https://www.googleapis.com/books/v1/",
+    "api_key": "",
+    "output" : "library.json"
+}
