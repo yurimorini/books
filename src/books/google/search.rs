@@ -13,12 +13,22 @@ fn get_url(isbn: &str, params: &ApiConfig) -> String {
 
 pub async fn search_isbn(isbn: &str, params: &ApiConfig) -> Option<String> {
     let url: String = get_url(isbn, params);
+
     match get(&url).await {
-        Ok(response) => match response.json::<Value>().await {
-            Ok(data) => get_first_result(data),
-            Err(_) => None,
-        },
-        Err(_) => None,
+        Ok(response) => {
+            println!("Search: {:?}", response.status());
+            match response.status().as_u16() {
+                200 => match response.json::<Value>().await {
+                    Ok(data) => get_first_result(data),
+                    Err(_) => None,
+                },
+                _ => None,
+            }
+        }
+        Err(e) => {
+            println!("{:?}", e);
+            None
+        }
     }
 }
 

@@ -1,8 +1,9 @@
-use futures::future::join_all;
+use futures::stream::{self, StreamExt};
 
 use super::get_volume;
 use super::search_isbn;
 use super::{Isbn, Volume};
+use std::{thread, time};
 
 #[derive(Debug)]
 pub struct ApiConfig {
@@ -31,10 +32,21 @@ impl Client {
     }
 
     pub async fn search_books(&self, list: Vec<Isbn>) -> Vec<Volume> {
-        join_all(list.iter().map(|isbn| self.search_book(isbn)))
+        let stream = stream::iter(list.iter()).then(|isbn| {
+            wait(500);
+            self.search_book(isbn)
+        });
+
+        stream
+            .collect::<Vec<_>>()
             .await
             .into_iter()
             .flatten()
             .collect()
     }
+}
+
+fn wait(value: u64) {
+    let timing = time::Duration::from_millis(value);
+    thread::sleep(timing);
 }

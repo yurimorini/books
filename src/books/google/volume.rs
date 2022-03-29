@@ -14,11 +14,20 @@ fn get_url(volume_id: &str, params: &ApiConfig) -> String {
 pub async fn get_volume(volume_id: &str, params: &ApiConfig) -> Option<Volume> {
     let url: String = get_url(volume_id, params);
     match get(&url).await {
-        Ok(response) => match response.json::<Value>().await {
-            Ok(data) => create_volume(data),
-            Err(_) => None,
-        },
-        Err(_) => None,
+        Ok(response) => {
+            println!("Volume: {:?}", response.status());
+            match response.status().as_u16() {
+                200 => match response.json::<Value>().await {
+                    Ok(data) => create_volume(data),
+                    Err(_) => None,
+                },
+                _ => None,
+            }
+        }
+        Err(e) => {
+            println!("{:?}", e);
+            None
+        }
     }
 }
 
